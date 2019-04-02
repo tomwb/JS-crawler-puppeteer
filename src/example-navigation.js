@@ -32,7 +32,7 @@ async function run() {
 	await page.waitFor(2*1000);
 	await page.screenshot({ path: 'screenshots/github_03.png', fullPage: true });
 
-  let numPages = await getNumPages(page);
+	let numPages = await getNumPages(page);
 
 	// pega todos os emails
 	let emailList = [];
@@ -45,37 +45,37 @@ async function run() {
 
 		// total de itens na pagina
 		let listLength = await page.evaluate((sel) => {
-	    return document.getElementsByClassName(sel).length;
-	  }, 'user-list-item');
+			return document.getElementsByClassName(sel).length;
+		}, 'user-list-item');
 
-	  console.log(listLength);
+		// console.log(listLength);
 
 		for (let i = 1; i <= listLength; i++) {
-	    let usernameSelector = '#user_search_results div.user-list div:nth-child(' + i + ') div.d-flex div a';
-	    let emailSelector = '#user_search_results div.user-list div:nth-child(' + i + ') div.d-flex div ul li:nth-child(2) > a';
+			let usernameSelector = '#user_search_results div.user-list div:nth-child(' + i + ') div.d-flex div a';
+			let emailSelector = '#user_search_results div.user-list div:nth-child(' + i + ') div.d-flex div ul li:nth-child(2) > a';
 
-	    // pega o username
-	    let username = await page.evaluate((sel) => {
-	        return document.querySelector(sel).getAttribute('href').replace('/', '');
-	      }, usernameSelector);
+			// pega o username
+			let username = await page.evaluate((sel) => {
+				return document.querySelector(sel).getAttribute('href').replace('/', '');
+			}, usernameSelector);
 
-	    // pega o email
-	    let email = await page.evaluate((sel) => {
-	        let element = document.querySelector(sel);
-	        return element? element.innerHTML: null;
-	      }, emailSelector);
+			// pega o email
+			let email = await page.evaluate((sel) => {
+				let element = document.querySelector(sel);
+				return element? element.innerHTML: null;
+			}, emailSelector);
 
-	    // caso o usuario não tenha email visivel
-	    if (!email)
-	      continue;
+			// caso o usuario não tenha email visivel
+			if (!email)
+				continue;
 
-	    emailList.push({ name:username, email: email });
-	  }
+			emailList.push({ name:username, email: email });
+		}
 	}
 
-  console.log(emailList);
+	console.log(emailList);
 
-  // grava o json
+		// grava o json
 	fs.writeFile(
 		'./json/github_emails.json',
 		JSON.stringify(emailList, null, 2), // optional params to format it nicely
@@ -86,22 +86,22 @@ async function run() {
 }
 
 async function getNumPages(page) {
-  let inner = await page.evaluate((sel) => {
-    let html = document.querySelector(sel).innerHTML;
-    
-    // o formato é: "69,803 users"
-    return html.replace(',', '').replace('users', '').trim();
-  }, 'div.codesearch-results div.px-2 div.d-flex h3');
+	let inner = await page.evaluate((sel) => {
+		let html = document.querySelector(sel).innerHTML;
 
-  let numUsers = parseInt(inner);
+		// o formato é: "69,803 users"
+		return html.replace(',', '').replace('users', '').trim();
+	}, 'div.codesearch-results div.px-2 div.d-flex h3');
 
-  console.log('numero de usuarios: ', numUsers);
+	let numUsers = parseInt(inner);
 
-  /*
-  * GitHub mostra 10 resultados por pagina
-  */
-  let numPages = Math.ceil(numUsers / 10);
-  return numPages;
+	console.log('numero de usuarios: ', numUsers);
+
+	/*
+	* GitHub mostra 10 resultados por pagina
+	*/
+	let numPages = Math.ceil(numUsers / 10);
+	return numPages;
 }
 
 run();
